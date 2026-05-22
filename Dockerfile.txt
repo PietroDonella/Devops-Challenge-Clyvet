@@ -1,0 +1,17 @@
+# Estágio de Build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+COPY ["ClyvoVet.Api/ClyvoVet.Api.csproj", "ClyvoVet.Api/"]
+RUN dotnet restore "ClyvoVet.Api/ClyvoVet.Api.csproj"
+COPY . .
+WORKDIR "/src/ClyvoVet.Api"
+RUN dotnet build "ClyvoVet.Api.csproj" -c Release -o /app/build
+RUN dotnet publish "ClyvoVet.Api.csproj" -c Release -o /app/publish
+
+# Estágio de Execução
+FROM mcr.microsoft.com/dotnet/aspnet:10.0
+WORKDIR /app
+COPY --from=build /app/publish .
+EXPOSE 8080
+ENV ASPNETCORE_URLS=http://+:8080
+CMD ["dotnet", "ClyvoVet.Api.dll"]
