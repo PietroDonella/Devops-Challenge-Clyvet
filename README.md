@@ -170,3 +170,16 @@ sudo docker run -d --name oracle-db \
 '
 echo "Provisionamento finalizado com sucesso!"
 ```
+---
+
+## 📐 Desenho Macro da Arquitetura
+
+![Arquitetura da Solução](diagrama%20arquitetura.JPG)
+
+### 📋 Descrição Detalhada da Arquitetura Cloud e Containers
+* **Fluxo de Requisições Externas:** O cliente (administradores, veterinários, tutores ou testes via Postman) dispara requisições HTTP direcionadas à API utilizando o endereço IP Público alocado na infraestrutura da Azure.
+* **Camada de Segurança perimetral (Network Security Group):** O tráfego de entrada bate diretamente no firewall de borda (NSG), que audita e bloqueia acessos indesejados, mantendo abertas e seguras apenas as portas configuradas no script: `22` para gerência operacional SSH, `8080` para comunicação com a API .NET e `1521` para conexões locais de monitoria ao banco de dados.
+* **Segregação de Rede Comercial (VNet & Subnet):** Toda a arquitetura foi provisionada na região `brazilsouth` (Sul do Brasil) encapsulada dentro de uma Rede Virtual própria (`10.10.0.0/16`) com uma sub-rede lógica exclusiva (`10.10.1.0/24`) para hospedagem da infraestrutura de servidores.
+* **Hospedagem Dedicada (Máquina Virtual Linux):** O nó computacional consiste em uma instância de VM escalável (`Standard_E2s_v3`) executando o sistema operacional corporativo Ubuntu Server 22.04 LTS, onde reside o ecossistema Docker Engine.
+* **Isolamento de Redes em Containers (`clyvovet-network`):** Dentro da VM, criamos uma rede interna isolada no Docker. Os microsserviços conversam de forma privativa utilizando resolução de nomes DNS interna (`oracle-db`), impossibilitando acessos diretos externos à porta do banco e mitigando riscos de vazamento de dados.
+* **Persistência de Dados via Volume Nomeado (`oracle-clyvovet-data`):** Para assegurar a con
